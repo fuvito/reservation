@@ -1,24 +1,22 @@
 package com.shelby.reservation.model;
 
-import java.util.HashSet;
-import java.util.Set;
-
 public class Flight {
-    private Integer id;
+    private Long id;
     private Integer capacity;
-    private Set<String> passengers; // only hold passenger names: names are assumed to be unique
 
-    public Flight(int id, int capacity) {
-        this.id = id;
-        this.capacity = capacity;
-        this.passengers = new HashSet<>();
+    public Flight() {
     }
 
-    public Integer getId() {
+    public Flight(Long id, int capacity) {
+        this.id = id;
+        this.capacity = capacity;
+    }
+
+    public Long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -30,33 +28,6 @@ public class Flight {
         this.capacity = capacity;
     }
 
-    public Set<String> getPassengers() {
-        return passengers;
-    }
-
-    public void setPassengers(Set<String> passengers) {
-        this.passengers = passengers;
-    }
-
-    public void addPassenger(String passengerName) {
-        if (this.passengers.contains(passengerName)) {
-            // throw exception !!!
-        }
-
-        if (this.passengers.size() > this.capacity) {
-            // throw exception
-        }
-
-        this.passengers.add(passengerName);
-    }
-
-    public void removePassenger(String passengerName) {
-        if (!this.passengers.contains(passengerName)) {
-            // throw exception !!!
-        }
-
-        this.passengers.remove(passengerName);
-    }
 
     @Override
     public String toString() {

@@ -2,6 +2,10 @@
 
 Team Shelby – Java Take Home Assignment
 
+## Api Documentation
+Open Api: please go to link http://localhost:8080/v3/api-docs/
+Swagger UI: please go to link http://localhost:8080/swagger-ui.html
+
 # Getting Started
 
 ### Reference Documentation
