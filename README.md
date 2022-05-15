@@ -11,4 +11,5 @@ Swagger UI: please go to link http://localhost:8080/swagger-ui.html
 ## Tests
 * Unit Tests: FlightControllerTest, ReservationControllerTest
 * Api (Integration) Tests: ReservationApiTest
+* Some Postman Tests: Reservations.postman_collection.json (under doc folder)
 
