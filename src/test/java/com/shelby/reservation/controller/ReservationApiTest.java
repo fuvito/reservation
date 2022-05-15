@@ -1,11 +1,12 @@
 package com.shelby.reservation.controller;
 
-import com.shelby.reservation.error.DuplicateReservationException;
-import com.shelby.reservation.error.FlightOverbookingException;
 import com.shelby.reservation.model.Reservation;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -13,32 +14,27 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest
-class ReservationControllerTest extends ReservationTestBase {
-
-    @Autowired
-    private ReservationController reservationController;
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+public class ReservationApiTest extends ReservationTestBase {
+    private static final String RESERVATIONS_API = "/api/v1/reservations";
 
     @Test
-    void getReservations() {
+    void getReservations(@Autowired TestRestTemplate restTemplate) {
         resetData();
         setupData(1L, 5, 1);
         setupData(2L, 6, 6);
         setupData(3L, 7, 12);
         setupData(4L, 8, 19);
 
-        // test
-        ResponseEntity<List<Reservation>> response = reservationController.getReservations();
-        assertNotNull(response);
+        ResponseEntity<Reservation[]> response = restTemplate.getForEntity(RESERVATIONS_API, Reservation[].class);
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertTrue(response.hasBody());
-        List<Reservation> list = response.getBody();
+        Reservation[] list = response.getBody();
         assertNotNull(list);
-        assertEquals(26, list.size());
+        assertEquals(26, list.length);
     }
 
     @Test
-    void getReservationsByFlight() {
+    void getReservationsByFlight(@Autowired TestRestTemplate restTemplate) {
         resetData();
         setupData(1L, 5, 1);
         setupData(2L, 6, 6);
@@ -47,29 +43,31 @@ class ReservationControllerTest extends ReservationTestBase {
 
         // test - 1
         {
-            ResponseEntity<List<Reservation>> response = reservationController.getReservationsByFlight(3L);
+            String url = RESERVATIONS_API + "/byflight/" + 1;
+            ResponseEntity<Reservation[]> response = restTemplate.getForEntity(url, Reservation[].class);
             assertNotNull(response);
             assertEquals(HttpStatus.OK, response.getStatusCode());
             assertTrue(response.hasBody());
-            List<Reservation> list = response.getBody();
+            Reservation[] list = response.getBody();
             assertNotNull(list);
-            assertEquals(7, list.size());
+            assertEquals(5, list.length);
         }
 
         // test - 2
         {
-            ResponseEntity<List<Reservation>> response = reservationController.getReservationsByFlight(4L);
+            String url = RESERVATIONS_API + "/byflight/" + 2;
+            ResponseEntity<Reservation[]> response = restTemplate.getForEntity(url, Reservation[].class);
             assertNotNull(response);
             assertEquals(HttpStatus.OK, response.getStatusCode());
             assertTrue(response.hasBody());
-            List<Reservation> list = response.getBody();
+            Reservation[] list = response.getBody();
             assertNotNull(list);
-            assertEquals(8, list.size());
+            assertEquals(6, list.length);
         }
     }
 
     @Test
-    void getReservation() {
+    void getReservation(@Autowired TestRestTemplate restTemplate) {
         resetData();
         setupData(1L, 1, 1);
         setupData(2L, 1, 2);
@@ -80,7 +78,8 @@ class ReservationControllerTest extends ReservationTestBase {
         {
             Long id = getData(1L).get(0).getId();
 
-            ResponseEntity<Reservation> response = reservationController.getReservation(id);
+            String url = RESERVATIONS_API + "/" + id;
+            ResponseEntity<Reservation> response = restTemplate.getForEntity(url, Reservation.class);
             assertNotNull(response);
             assertEquals(HttpStatus.OK, response.getStatusCode());
             assertTrue(response.hasBody());
@@ -92,7 +91,8 @@ class ReservationControllerTest extends ReservationTestBase {
         {
             Long id = getData(2L).get(0).getId();
 
-            ResponseEntity<Reservation> response = reservationController.getReservation(id);
+            String url = RESERVATIONS_API + "/" + id;
+            ResponseEntity<Reservation> response = restTemplate.getForEntity(url, Reservation.class);
             assertNotNull(response);
             assertEquals(HttpStatus.OK, response.getStatusCode());
             assertTrue(response.hasBody());
@@ -105,7 +105,8 @@ class ReservationControllerTest extends ReservationTestBase {
         {
             Long id = getData(3L).get(0).getId();
 
-            ResponseEntity<Reservation> response = reservationController.getReservation(id);
+            String url = RESERVATIONS_API + "/" + id;
+            ResponseEntity<Reservation> response = restTemplate.getForEntity(url, Reservation.class);
             assertNotNull(response);
             assertEquals(HttpStatus.OK, response.getStatusCode());
             assertTrue(response.hasBody());
@@ -118,7 +119,8 @@ class ReservationControllerTest extends ReservationTestBase {
         {
             Long id = getData(4L).get(0).getId();
 
-            ResponseEntity<Reservation> response = reservationController.getReservation(id);
+            String url = RESERVATIONS_API + "/" + id;
+            ResponseEntity<Reservation> response = restTemplate.getForEntity(url, Reservation.class);
             assertNotNull(response);
             assertEquals(HttpStatus.OK, response.getStatusCode());
             assertTrue(response.hasBody());
@@ -129,7 +131,7 @@ class ReservationControllerTest extends ReservationTestBase {
     }
 
     @Test
-    void postReservation() {
+    void postReservation(@Autowired TestRestTemplate restTemplate) {
         resetData();
 
         Reservation newReservation = new Reservation();
@@ -138,7 +140,7 @@ class ReservationControllerTest extends ReservationTestBase {
         newReservation.setFirstName("NewFirst");
         newReservation.setLastName("NewLast");
 
-        ResponseEntity<Reservation> response = reservationController.postReservation(newReservation);
+        ResponseEntity<Reservation> response = restTemplate.postForEntity(RESERVATIONS_API, newReservation, Reservation.class);
         assertNotNull(response);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertTrue(response.hasBody());
@@ -153,7 +155,7 @@ class ReservationControllerTest extends ReservationTestBase {
     }
 
     @Test
-    void putReservation() {
+    void putReservation(@Autowired TestRestTemplate restTemplate) {
         resetData();
         setupData(1L, 1, 1);
         Reservation existingReservation = getData(1L).get(0);
@@ -165,7 +167,10 @@ class ReservationControllerTest extends ReservationTestBase {
         editReservation.setFirstName("EditedFirst");
         editReservation.setLastName("EditedLast");
 
-        ResponseEntity<Reservation> response = reservationController.putReservation(existingReservation.getId(), editReservation);
+        String url = RESERVATIONS_API + "/" + existingReservation.getId();
+        HttpEntity<Reservation> requestEntity = new HttpEntity<>(editReservation);
+        ResponseEntity<Reservation> response = restTemplate.exchange(url, HttpMethod.PUT, requestEntity, Reservation.class);
+
         assertNotNull(response);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertTrue(response.hasBody());
@@ -181,12 +186,13 @@ class ReservationControllerTest extends ReservationTestBase {
     }
 
     @Test
-    void deleteReservation() {
+    void deleteReservation(@Autowired TestRestTemplate restTemplate) {
         resetData();
         setupData(1L, 1, 1);
         Reservation existingReservation = getData(1L).get(0);
 
-        ResponseEntity<Reservation> response = reservationController.deleteReservation(existingReservation.getId());
+        String url = RESERVATIONS_API + "/" + existingReservation.getId();
+        ResponseEntity<Reservation> response = restTemplate.exchange(url, HttpMethod.DELETE, null, Reservation.class);
         assertNotNull(response);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertTrue(response.hasBody());
@@ -205,7 +211,7 @@ class ReservationControllerTest extends ReservationTestBase {
     }
 
     @Test
-    void duplicateReservation() throws InterruptedException {
+    void duplicateReservation(@Autowired TestRestTemplate restTemplate) throws InterruptedException {
         resetData();
 
         Reservation resOriginal = new Reservation();
@@ -214,7 +220,9 @@ class ReservationControllerTest extends ReservationTestBase {
         resOriginal.setFirstName("DupFirst");
         resOriginal.setLastName("DupLast");
 
-        ResponseEntity<Reservation> response = reservationController.postReservation(resOriginal);
+        String url = RESERVATIONS_API;
+        ResponseEntity<Reservation> response = restTemplate.postForEntity(url, resOriginal, Reservation.class);
+
         assertNotNull(response);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertTrue(response.hasBody());
@@ -226,15 +234,12 @@ class ReservationControllerTest extends ReservationTestBase {
         resDuplicate.setLastName("DupLast2");
 
         // try duplicate : same flight with same email address
-        try {
-            Thread.sleep(10); // give some time between posts: reservations may get some id
-            reservationController.postReservation(resDuplicate);
-            fail("Duplicate Reservation created");
-        } catch (DuplicateReservationException e) {
-            assertEquals(DuplicateReservationException.generateMessage(resOriginal.getFlightId(), resOriginal.getEmail()), e.getMessage());
-        } catch (Exception e) {
-            fail("No Other Exception is Expected");
-        }
+        Thread.sleep(10); // give some time between posts: reservations may get some id
+        response = restTemplate.postForEntity(url, resDuplicate, Reservation.class);
+        assertNotNull(response);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertTrue(response.hasBody());
+
 
         // NOT duplicate : different flight with same email address
         Reservation resNotDuplicate1 = new Reservation();
@@ -244,7 +249,7 @@ class ReservationControllerTest extends ReservationTestBase {
         resNotDuplicate1.setLastName("DupLast");
 
         Thread.sleep(10); // give some time between posts: reservations may get some id
-        response = reservationController.postReservation(resNotDuplicate1);
+        response = restTemplate.postForEntity(url, resNotDuplicate1, Reservation.class);
         assertNotNull(response);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertTrue(response.hasBody());
@@ -258,7 +263,7 @@ class ReservationControllerTest extends ReservationTestBase {
         resNotDuplicate2.setLastName("DupLast");
 
         Thread.sleep(10); // give some time between posts: reservations may get some id
-        response = reservationController.postReservation(resNotDuplicate2);
+        response = restTemplate.postForEntity(url, resNotDuplicate2, Reservation.class);
         assertNotNull(response);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertTrue(response.hasBody());
@@ -269,7 +274,7 @@ class ReservationControllerTest extends ReservationTestBase {
     }
 
     @Test
-    void overbookingReservation() throws InterruptedException {
+    void overbookingReservation(@Autowired TestRestTemplate restTemplate) throws InterruptedException {
         resetData();
         setupData(1L, 10, 1); // Flight 1 has Capacity 10
 
@@ -279,22 +284,23 @@ class ReservationControllerTest extends ReservationTestBase {
         overbookingReservation.setFirstName("OverbookingFirst");
         overbookingReservation.setLastName("OverbookingLast");
 
+        String url = RESERVATIONS_API;
+        ResponseEntity<Reservation> response;
+
         // try to create new Reservation
-        try {
-            Thread.sleep(10); // give some time between posts: reservations may get some id
-            reservationController.postReservation(overbookingReservation);
-            fail("Overbooked Reservation created");
-        } catch (FlightOverbookingException e) {
-            assertEquals(FlightOverbookingException.generateMessage(1L, 10), e.getMessage());
-        } catch (Exception e) {
-            fail("No Other Exception is Expected");
-        }
+        Thread.sleep(10); // give some time between posts: reservations may get some id
+        response = restTemplate.postForEntity(url, overbookingReservation, Reservation.class);
+        assertNotNull(response);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertTrue(response.hasBody());
 
         // now delete one reservation
-        reservationController.deleteReservation(getData(1L).get(0).getId());
+
+        String urlDelete = RESERVATIONS_API + "/" + getData(1L).get(0).getId();
+        restTemplate.exchange(urlDelete, HttpMethod.DELETE, null, Reservation.class);
 
         Thread.sleep(10); // give some time between posts: reservations may get some id
-        ResponseEntity<Reservation> response = reservationController.postReservation(overbookingReservation);
+        response = restTemplate.postForEntity(url, overbookingReservation, Reservation.class);
         assertNotNull(response);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertTrue(response.hasBody());

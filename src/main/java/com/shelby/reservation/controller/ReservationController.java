@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/reservations")
+@RequestMapping("/api/v1/reservations")
 public class ReservationController {
     private static final Logger LOGGER = LoggerFactory.getLogger(ReservationController.class);
 
