@@ -8,6 +8,7 @@ import com.shelby.reservation.repo.ReservationRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -51,10 +52,14 @@ public class ReservationService {
     }
 
     public List<Reservation> list() {
-        return reservationRepo.list();
+        List<Reservation> list = reservationRepo.list();
+        list.sort(Comparator.comparing(Reservation::getId));
+        return list;
     }
 
     public List<Reservation> listByFlight(Long flightId) {
-        return reservationRepo.listByFlight(flightId);
+        List<Reservation> list = reservationRepo.listByFlight(flightId);
+        list.sort(Comparator.comparing(Reservation::getId));
+        return list;
     }
 }
